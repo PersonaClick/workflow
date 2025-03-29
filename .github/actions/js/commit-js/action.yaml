@@ -1,0 +1,74 @@
+name: Commit changes composite
+description: commit made changes
+
+inputs:
+  token:
+    description: GitHub PAT
+    required: true
+  baseCommit:
+    description: Base commit to check changes from
+    required: true
+  additionalBranch:
+    description: Additional branch to push to
+    required: false
+    default: ''
+  exclude:
+    description: Which workspaces to exclude
+    required: false
+    default: 'nothing'
+  workingDirectory:
+    required: false
+    default: ./
+    description: Where the script runs
+
+outputs:
+  committed:
+    value: ${{ steps.committer.outputs.committed }}
+    description: Has the commit been sent? 'true' as string if yes
+
+runs:
+  using: composite
+
+  steps:
+    - name: Create commit message
+      working-directory: ${{ inputs.workingDirectory }}
+      id: commit_message
+      env:
+        BASE_COMMIT: ${{ inputs.baseCommit }}
+        EXCLUDE: ${{ inputs.exclude }}
+      run: |
+        INITIAL_MESSAGE=$'chore(common): versions\n\n'
+        temp_file=$(mktemp)
+        yarn workspaces foreach --since=$BASE_COMMIT --exclude=$EXCLUDE exec "echo \"\$npm_package_name:\$npm_package_version \" >> $temp_file"
+        MESSAGE=$(cat $temp_file)
+        echo $(cat $temp_file)
+        INITIAL_MESSAGE+=$MESSAGE
+        INITIAL_MESSAGE="${INITIAL_MESSAGE//'%'/' '}"
+        INITIAL_MESSAGE="${INITIAL_MESSAGE//$'\n'/' '}"
+        INITIAL_MESSAGE="${INITIAL_MESSAGE//$'\r'/' '}"
+        echo "commitMessage=$INITIAL_MESSAGE" >> $GITHUB_OUTPUT
+        echo $INITIAL_MESSAGE
+        rm $temp_file
+      shell: bash
+
+    - name: Commit changes
+      id: committer
+      uses: planetscale/ghcommit-action@v0.2.0
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        repo: ${{ github.repository }}
+        branch: master
+        commit_message: ${{ steps.commit_message.outputs.commitMessage }}
+        file_pattern: '*.json *.md *.yaml *.yml *.lock'
+
+    - name: Commit changes to additional branch
+      if: inputs.additionalBranch != ''
+      uses: planetscale/ghcommit-action@v0.2.0
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        repo: ${{ github.repository }}
+        branch: ${{ inputs.additionalBranch }}
+        commit_message: ${{ steps.commit_message.outputs.commitMessage }}
+        file_pattern: '*.json *.md *.yaml *.yml *.lock'

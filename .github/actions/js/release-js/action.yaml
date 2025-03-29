@@ -1,0 +1,46 @@
+name: Composite release JS action
+description: Release action - create and publish release with source code
+
+inputs:
+  isMonorepo:
+    required: false
+    default: 'false'
+    description: Treat this repo as monorepo. If true - tags for releases will include package names
+  baseCommit:
+    required: true
+    description: Base commit from which to parse changed workspaces
+  token:
+    required: true
+    description: GitHub PAT
+  exclude:
+    required: false
+    default: 'nothing'
+    description: Which workspaces to exclude
+  workingDirectory:
+    required: false
+    default: ./
+    description: Where the script runs
+
+runs:
+  using: composite
+
+  steps:
+    - name: Release monorepo
+      working-directory: ${{ inputs.workingDirectory }}
+      if: inputs.isMonorepo == 'true'
+      env:
+        BASE_COMMIT: ${{ inputs.baseCommit }}
+        GH_TOKEN: ${{ inputs.token }}
+        EXCLUDE: ${{ inputs.exclude }}
+      run: yarn workspaces foreach --since=$BASE_COMMIT^ --exclude=$EXCLUDE -vp --jobs=2 exec 'bash -c "yarn pack && VERSION=$npm_package_version && NAME=$npm_package_name && gh release create \"\$NAME@\$VERSION\" ./package.tgz --title=\$NAME-\$VERSION --generate-notes"'
+      shell: bash
+
+    - name: Release single package
+      working-directory: ${{ inputs.workingDirectory }}
+      if: inputs.isMonorepo == 'false'
+      env:
+        BASE_COMMIT: ${{ inputs.baseCommit }}
+        GH_TOKEN: ${{ inputs.token }}
+        EXCLUDE: ${{ inputs.exclude }}
+      run: yarn workspaces foreach --since=$BASE_COMMIT^ --exclude=$EXCLUDE -vp --jobs=2 exec 'bash -c "yarn pack && VERSION=$npm_package_version && gh release create \"v\$VERSION\" ./package.tgz --title=\$VERSION --generate-notes"'
+      shell: bash

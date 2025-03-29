@@ -1,0 +1,89 @@
+name: Reusable Android SDK publish to Sona
+
+on:
+  workflow_call:
+    inputs:
+      PROPERTIES_FILE:
+        default: gradle.properties
+        type: string
+        description: Relative file path for putting in secrets
+        required: false
+      SIGNING_SECRET_KEY_RING_FILE:
+        default: com.personaClick.key.gpg
+        type: string
+        description: Location and name for signature file
+        required: false
+      SIGNING_SECRET_KEY_RING_FILE_LOCATION:
+        type: string
+        description: Location and name for signature file
+        required: false
+        default: ./personalization-sdk
+      GRADLE_VERSION:
+        type: number
+        required: false
+      VARIANT_NAME:
+        description: PersonaClick or PersonaClick
+        type: string
+        required: true
+      URL:
+        description: GitHub repo URL
+        type: string
+        required: true
+      MAVEN_REPOSITORY_URL:
+        description: Maven repository publish to
+        type: string
+        required: true
+      OSSRH_USERNAME:
+        required: false
+        type: string
+        default: 'github-bot@personaclick.com'
+    secrets:
+      SONATA_USERNAME:
+        required: true
+      SONATA_PASSWORD:
+        required: true
+      OSSRH_PASSWORD:
+        required: true
+      SIGNING_KEY_ID:
+        required: true
+      SIGNING_PASSWORD:
+        required: true
+      SIGNING_KEY_FILE_AS_BASE64_STRING:
+        required: true
+      SONATYPE_PersonaClick:
+        required: true
+      SONATYPE_PERSONACLICK:
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.OSSRH_PASSWORD }}
+          ref: master
+
+      - name: Prepare Android Action
+        uses: personaClick/workflow/.github/actions/android/prepare@master
+        with:
+          PROPERTIES_FILE: ${{ inputs.PROPERTIES_FILE }}
+          SIGNING_SECRET_KEY_RING_FILE: ${{ inputs.SIGNING_SECRET_KEY_RING_FILE }}
+          SIGNING_SECRET_KEY_RING_FILE_LOCATION: ${{ inputs.SIGNING_SECRET_KEY_RING_FILE_LOCATION }}
+          VARIANT_NAME: ${{ inputs.VARIANT_NAME }}
+          URL: ${{ inputs.URL }}
+          MAVEN_REPOSITORY_URL: ${{ inputs.MAVEN_REPOSITORY_URL }}
+          OSSRH_USERNAME: ${{ inputs.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          SONATA_USERNAME: ${{ secrets.SONATA_USERNAME }}
+          SONATA_PASSWORD: ${{ secrets.SONATA_PASSWORD }}
+          SONATYPE_PERSONACLICK: ${{ secrets.SONATYPE_PERSONACLICK }}
+          SONATYPE_PersonaClick: ${{ secrets.SONATYPE_PersonaClick }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          SIGNING_KEY_FILE_AS_BASE64_STRING: ${{ secrets.SIGNING_KEY_FILE_AS_BASE64_STRING }}
+
+      - name: Publish
+        run: ./gradlew publish
