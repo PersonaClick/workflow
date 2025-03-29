@@ -1,0 +1,121 @@
+name: Reusable PHP PR checks
+
+on:
+  workflow_call:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+
+      rabbit:
+        image: rabbitmq:management-alpine
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+        ports:
+          - 5672:5672
+
+      elasticsearch:
+        image: elasticsearch:6.8.0
+        env:
+          node.name: elastic
+          discovery.type: single-node
+        ports:
+          - 9200:9200
+          - 9300:9300
+        options: >
+          --env "discovery.type=single-node"
+          --env "xpack.security.enabled=false"
+
+      postgres:
+        image: ghcr.io/personaClick/postgres-migrated:latest
+        env:
+          POSTGRES_PASSWORD: rails
+          POSTGRES_USER: rails
+          PGDATA: /data
+        ports:
+          - 5432:5432
+        credentials:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+
+      clickhouse-server:
+        image: ghcr.io/personaClick/clickhouse-server-migrated:latest
+        ports:
+          - 8123:8123
+        credentials:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy files into Elasticsearch container
+        run: |
+          container_id=$(docker ps | grep 'elasticsearch:6.8.0' | awk '{ print $1 }')
+          echo "Elasticsearch container ID: $container_id"
+          docker exec "$container_id" mkdir -p /usr/share/elasticsearch/config/hunspell
+          docker cp ./.config/elastic_dictionary/tr_TR "$container_id":/usr/share/elasticsearch/config/hunspell/tr_TR
+
+      - name: Changed files
+        id: changed_files
+        uses: tj-actions/changed-files@v42
+
+      - name: Check if any packages need testing
+        env:
+          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+        id: changed_packages
+        run: |
+          echo "packages=$(echo "$CHANGED_FILES" | grep 'packages/' | awk -F'/' '{print $2}' | uniq)" >> $GITHUB_OUTPUT
+          echo "Changed packages"
+          echo $packages
+
+      - name: Set up PHP
+        if: ${{ steps.changed_packages.outputs.packages != '' }}
+        uses: shivammathur/setup-php@v2
+        with:
+          tools: composer
+          extensions: event
+          php-version: '8.1.21'
+
+      - name: Install dependencies
+        if: ${{ steps.changed_packages.outputs.packages != '' }}
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Configure Elasticsearch for Hunspell
+        run: |
+          curl -X PUT "http://localhost:9200/_cluster/settings" -H 'Content-Type: application/json' -d'
+          {
+            "persistent": {
+              "indices.analysis.hunspell.dictionary.location": "/usr/share/elasticsearch/config/hunspell"
+            }
+          }
+          '
+
+      - name: Run core tests
+        if: ${{ steps.changed_packages.outputs.packages != '' }}
+        run: |
+          echo "🏗️🏗️🏗️ Testing core..."
+          mv packages/core/config/test_secrets.ini.example packages/core/config/test_secrets.ini
+          XDEBUG_MODE=coverage vendor/bin/phpunit --bootstrap=packages/core/test/autoload.php --configuration=packages/core/phpunit.xml
+
+      - name: Run tests
+        env:
+          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+        if: ${{ steps.changed_packages.outputs.packages != '' }}
+        run: |
+          PACKAGES=$(echo "$CHANGED_FILES" | tr ' ' '\n' | grep 'packages/' | awk -F'/' '{print $2}' | uniq)
+          for package in $PACKAGES
+          do
+            echo "🏗️🏗️🏗️ Testing $package..."
+            if test -f "packages/$package/config/test_secrets.ini.example"; then 
+              mv packages/$package/config/test_secrets.ini.example packages/$package/config/test_secrets.ini
+              XDEBUG_MODE=coverage vendor/bin/phpunit --bootstrap=packages/$package/test/autoload.php --configuration=packages/$package/phpunit.xml
+            fi
+          done
