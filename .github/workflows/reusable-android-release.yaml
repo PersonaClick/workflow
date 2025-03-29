@@ -1,0 +1,120 @@
+name: Reusable Android SDK release
+
+on:
+  workflow_call:
+    inputs:
+      appId:
+        required: true
+        type: string
+        description: 'App ID for committing and pushing'
+      PROPERTIES_FILE:
+        default: gradle.properties
+        type: string
+        description: Relative file path for putting in secrets
+        required: false
+      SIGNING_SECRET_KEY_RING_FILE:
+        default: com.personaClick.key.gpg
+        type: string
+        description: Location and name for signature file
+        required: false
+      SIGNING_SECRET_KEY_RING_FILE_LOCATION:
+        type: string
+        description: Location and name for signature file
+        required: true
+      GRADLE_VERSION:
+        type: number
+        required: false
+      VARIANT_NAME:
+        description: PersonaClick or PersonaClick
+        type: string
+        required: true
+      URL:
+        description: GitHub repo URL
+        type: string
+        required: true
+      MAVEN_REPOSITORY_URL:
+        description: Maven repository publish to
+        type: string
+        required: true
+      OSSRH_USERNAME:
+        required: false
+        type: string
+        default: 'github-bot@personaclick.com'
+
+    secrets:
+      SONATA_USERNAME:
+        required: true
+      SONATA_PASSWORD:
+        required: true
+      SONATYPE_PersonaClick:
+        required: true
+      SONATYPE_PERSONACLICK:
+        required: true
+      OSSRH_PASSWORD:
+        required: true
+      SIGNING_KEY_ID:
+        required: true
+      SIGNING_PASSWORD:
+        required: true
+      SIGNING_KEY_FILE_AS_BASE64_STRING:
+        required: true
+      appSecret:
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ inputs.appId }}
+          private-key: ${{ secrets.appSecret }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: master
+
+      - name: Prepare Android Action
+        uses: personaClick/workflow/.github/actions/android/prepare@master
+        with:
+          PROPERTIES_FILE: ${{ inputs.PROPERTIES_FILE }}
+          SIGNING_SECRET_KEY_RING_FILE: ${{ inputs.SIGNING_SECRET_KEY_RING_FILE }}
+          SIGNING_SECRET_KEY_RING_FILE_LOCATION: ${{ inputs.SIGNING_SECRET_KEY_RING_FILE_LOCATION }}
+          VARIANT_NAME: ${{ inputs.VARIANT_NAME }}
+          URL: ${{ inputs.URL }}
+          MAVEN_REPOSITORY_URL: ${{ inputs.MAVEN_REPOSITORY_URL }}
+          OSSRH_USERNAME: ${{ inputs.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          SONATA_USERNAME: ${{ secrets.SONATA_USERNAME }}
+          SONATA_PASSWORD: ${{ secrets.SONATA_PASSWORD }}
+          SONATYPE_PERSONACLICK: ${{ secrets.SONATYPE_PERSONACLICK }}
+          SONATYPE_PersonaClick: ${{ secrets.SONATYPE_PersonaClick }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          SIGNING_KEY_FILE_AS_BASE64_STRING: ${{ secrets.SIGNING_KEY_FILE_AS_BASE64_STRING }}
+
+      - name: Retrieve version
+        id: versionName
+        env:
+          FILE_PATH: ./personalization-sdk/build.gradle
+        run: |
+          version=$(grep -o "version='[^']*'" $FILE_PATH | head -1 | cut -d"'" -f2)
+          echo "versionName=$version" >> $GITHUB_ENV
+          echo "versionName=$version" >> $GITHUB_OUTPUT
+
+      - name: Zip source
+        run: |
+          tar -czvf source.tgz *
+
+      - name: Create release
+        env:
+          TAG: ${{ steps.versionName.outputs.versionName }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release create "v$TAG" ./source.tgz \
+          --title=$TAG \
+          --generate-notes

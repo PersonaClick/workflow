@@ -1,0 +1,98 @@
+name: iOS checks
+
+on:
+  workflow_call:
+    inputs:
+      googleServicesFileLocation:
+        required: false
+        type: string
+        default: './DemoApp/PersonaClickDemo/Supporting Files/'
+      googleServicesFileName:
+        required: false
+        type: string
+        default: GoogleService-Info.plist
+
+    secrets:
+      googleServicesString:
+        description: Google services file as base64 string
+        required: true
+      cocoapodsToken:
+        description: Cocoapods token
+        required: true
+
+jobs:
+  run:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: swift-actions/setup-swift@v2
+
+      - name: Pod install
+        working-directory: ./DemoApp
+        run: |
+          pod cache clean --all
+          rm -rf Pods
+          rm -rf Pods.xcodeproj
+          pod install
+
+      - name: Decode signing key file
+        uses: timheuer/base64-to-file@v1.2
+        id: service_account_json_file
+        with:
+          fileName: ${{ inputs.googleServicesFileName }}
+          fileDir: ${{ inputs.googleServicesFileLocation }}
+          encodedString: ${{ secrets.googleServicesString }}
+
+      - name: Copy Google Service
+        run: |
+          cp ./DemoApp/PersonaClickDemo/Supporting\ Files/GoogleService-Info.plist ./DemoApp/GoogleService-Info.plist
+          cp ./DemoApp/PersonaClickDemo/Supporting\ Files/GoogleService-Info.plist ./DemoApp/PersonaClick.xcodeproj/xcshareddata/xcschemes/GoogleService-Info.plist
+          cp ./DemoApp/PersonaClickDemo/Supporting\ Files/GoogleService-Info.plist ./DemoApp/PersonaClickDemo/GoogleService-Info.plist
+
+      - name: Use tree to show all files
+        run: |
+          print_tree() {
+            find "$1" | awk '
+            BEGIN {
+              FS="/"
+              OFS="/"
+            }
+            {
+              depth = split($0, path, "/") - 1
+              for (i = 1; i <= depth; i++) {
+                printf "|   "
+              }
+              printf "|-- %s\n", path[depth + 1]
+            }'
+          }
+
+          start_dir="${1:-.}"
+
+          echo "$start_dir"
+          print_tree "$start_dir"
+
+      - name: Build
+        run: |
+          xcodebuild clean build -workspace ./DemoApp/PersonaClick.xcworkspace -scheme PersonaClickDemo \
+          -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+          CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED='NO' CODE_SIGN_ENTITLEMENTS=''
+
+      - name: Run tests
+        if: ${{ !cancelled() }}
+        run: |
+          xcodebuild clean test -workspace ./DemoApp/PersonaClick.xcworkspace -scheme PersonaClickDemo \
+          -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+          CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED='NO' CODE_SIGN_ENTITLEMENTS=''
+
+      - name: Lint spec
+        if: ${{ !cancelled() }}
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.cocoapodsToken }}
+        run: pod spec lint --allow-warnings
+
+      - name: Lint lib
+        if: ${{ !cancelled() }}
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.cocoapodsToken }}
+        run: pod lib lint --allow-warnings
