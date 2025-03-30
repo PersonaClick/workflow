@@ -10,7 +10,7 @@ type GetProjectIssueItemId = (
 export const getProjectIssueItemId: GetProjectIssueItemId = async (
   projectId,
   issueNumber,
-  owner = 'personaClick',
+  owner = 'rees46',
   repo = 'planning'
 ) => {
   const query = `#graphql

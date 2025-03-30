@@ -8,7 +8,7 @@ type GetProjectId = (
 
 export const getProjectId: GetProjectId = async (
   projectNumber = 5,
-  owner = 'personaClick',
+  owner = 'rees46',
   repo = 'planning'
 ) => {
   try {
