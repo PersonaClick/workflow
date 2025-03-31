@@ -1,0 +1,39 @@
+name: Create commit
+description: create commit
+
+inputs:
+  targetDirectory:
+    default: target
+    description: Commit author GitGup token
+    required: true
+  githubToken:
+    description: GitHup token
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - name: Create commit
+      shell: bash
+      working-directory: ${{ inputs.targetDirectory }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.githubToken }}
+      run: |
+        git config --global user.name Jade Smith
+        git config --global user.email github-bot@rees46.com
+        git add .
+        echo "Changes to be committed:"
+        git diff --staged
+        git commit -m "feat: release"
+
+    # - name: Commit changes
+    #   id: committer
+    #   uses: planetscale/ghcommit-action@v0.2.0
+    #   env:
+    #     GITHUB_TOKEN: ${{ inputs.githubToken }}
+    #   with:
+    #     repo: ${{ github.repository }}
+    #     branch: master
+    #     commit_message: ${{ steps.commit_message.outputs.commitMessage }}
+    #     file_pattern: "*.json *.md *.yaml *.yml *.lock"
