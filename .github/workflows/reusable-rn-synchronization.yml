@@ -72,18 +72,18 @@ jobs:
         working-directory: repo2
         run: |
           find . -type f -name 'package.json' -exec sed -i \
-            -e 's|rees46/react-native|personaclick/rn|g' \
-            -e 's|Rees46/react-native|PersonaClick/rn|g' \
-            -e 's/Rees46/PersonaClick/g' {} +
+            -e 's|personaclick/react-native|personaclick/rn|g' \
+            -e 's|PersonaClick/react-native|PersonaClick/rn|g' \
+            -e 's/PersonaClick/PersonaClick/g' {} +
 
       - name: Apply changes to JavaScript files
         if: env.path_changes != '0'
         working-directory: repo2
         run: |
           find . -type f \( -name '*.js' \) -exec sed -i \
-            -e 's|https://api.rees46.ru/|https://api.personaclick.com/|g' \
-            -e 's/rees46/personaClick/g' \
-            -e 's/Rees46/PersonaClick/g' {} +
+            -e 's|https://api.personaclick.com/|https://api.personaclick.com/|g' \
+            -e 's/personaclick/personaClick/g' \
+            -e 's/PersonaClick/PersonaClick/g' {} +
 
       - name: Apply changes to CHANGELOG.md
         if: env.path_changes != '0'
@@ -96,7 +96,7 @@ jobs:
         working-directory: repo2
         run: |
           git config --global user.name Jade Smith 
-          git config --global user.email github-bot@rees46.com
+          git config --global user.email github-bot@personaclick.com
           git add .
           echo "Changes to be committed:"
           git diff --staged

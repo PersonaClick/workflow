@@ -58,12 +58,12 @@ jobs:
           PGUSER: postgres
           PGHOST: localhost
         run: |
-          psql -c "CREATE DATABASE personaClick_test WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaClick_production WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaClick_clickhouse_rails_test WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaClick_rails_test WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaClick_clickhouse WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaClick_clickhouse_test WITH OWNER postgres;"
+          psql -c "CREATE DATABASE personaclick_test WITH OWNER postgres;"
+          psql -c "CREATE DATABASE personaclick_production WITH OWNER postgres;"
+          psql -c "CREATE DATABASE personaclick_clickhouse_rails_test WITH OWNER postgres;"
+          psql -c "CREATE DATABASE personaclick_rails_test WITH OWNER postgres;"
+          psql -c "CREATE DATABASE personaclick_clickhouse WITH OWNER postgres;"
+          psql -c "CREATE DATABASE personaclick_clickhouse_test WITH OWNER postgres;"
           psql -d postgres -c "SELECT version();"
 
       - name: Checkout

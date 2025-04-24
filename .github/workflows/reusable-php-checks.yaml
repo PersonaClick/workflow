@@ -33,7 +33,7 @@ jobs:
           --env "xpack.security.enabled=false"
 
       postgres:
-        image: ghcr.io/personaClick/postgres-migrated:latest
+        image: ghcr.io/personaclick/postgres-migrated:latest
         env:
           POSTGRES_PASSWORD: rails
           POSTGRES_USER: rails
@@ -45,7 +45,7 @@ jobs:
           username: ${{ github.repository_owner }}
 
       clickhouse-server:
-        image: ghcr.io/personaClick/clickhouse-server-migrated:latest
+        image: ghcr.io/personaclick/clickhouse-server-migrated:latest
         ports:
           - 8123:8123
         credentials:
