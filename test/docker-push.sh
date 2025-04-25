@@ -1,6 +1,6 @@
 CHANGED_FILES="packages/api-service/src/ApiWorker.php packages/core/test/autoload.php packages/import-service/test/autoload.php"
 
-REPOSITORY_OWNER=personaClick
+REPOSITORY_OWNER=personaclick
 
 PACKAGES=($(echo "$CHANGED_FILES" | tr ' ' '\n' | grep 'packages/' | awk -F'/' '{print $2}' | uniq))
 echo "Trying to build $PACKAGES"

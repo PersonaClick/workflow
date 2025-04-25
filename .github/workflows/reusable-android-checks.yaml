@@ -9,7 +9,7 @@ on:
         description: Relative file path for putting in secrets
         required: false
       SIGNING_SECRET_KEY_RING_FILE:
-        default: com.personaClick.key.gpg
+        default: com.personaclick.key.gpg
         type: string
         description: Location and name for signature file
         required: false
@@ -76,7 +76,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare Android Action
-        uses: personaClick/workflow/.github/actions/android/prepare@master
+        uses: personaclick/workflow/.github/actions/android/prepare@master
         with:
           PROPERTIES_FILE: ${{ inputs.PROPERTIES_FILE }}
           SIGNING_SECRET_KEY_RING_FILE: ${{ inputs.SIGNING_SECRET_KEY_RING_FILE }}

@@ -22,7 +22,7 @@ type GetIssueIdsByLabel = (
 
 export const getIssueIdsByLabel: GetIssueIdsByLabel = async (
   labels,
-  owner = 'personaClick',
+  owner = 'personaclick',
   repo = 'planning'
 ) => {
   try {

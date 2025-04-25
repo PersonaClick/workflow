@@ -43,7 +43,7 @@ runs:
 
     - name: Force Yarn to use NPM Registry
       run: |
-        yarn config set npmScopes.personaClick.npmRegistryServer ${{ inputs.registryServer }}
+        yarn config set npmScopes.personaclick.npmRegistryServer ${{ inputs.registryServer }}
         yarn config set npmRegistryServer ${{ inputs.registryServer }}
       shell: bash
 

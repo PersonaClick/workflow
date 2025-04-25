@@ -10,7 +10,7 @@ jobs:
 
     services:
       postgresql:
-        image: ghcr.io/personaClick/postgres-migrated:latest
+        image: ghcr.io/personaclick/postgres-migrated:latest
         env:
           POSTGRES_PASSWORD: rails
           POSTGRES_USER: rails
@@ -25,7 +25,7 @@ jobs:
       pgbouncer:
         image: bitnami/pgbouncer:latest
         env:
-          PGBOUNCER_DATABASE: personaClick
+          PGBOUNCER_DATABASE: personaclick
           POSTGRESQL_USERNAME: rails
           POSTGRESQL_PASSWORD: rails
           PGBOUNCER_CONF_DIR: /bitnami/pgbouncer/conf
