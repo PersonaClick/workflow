@@ -11,7 +11,7 @@ inputs:
     description: Relative file path for putting in secrets
     required: false
   SIGNING_SECRET_KEY_RING_FILE:
-    default: com.personaClick.key.gpg
+    default: com.personaclick.key.gpg
     description: Location and name for signature file
     required: false
   SIGNING_SECRET_KEY_RING_FILE_LOCATION:
