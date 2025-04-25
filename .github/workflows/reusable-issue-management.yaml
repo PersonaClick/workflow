@@ -301,7 +301,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issueNumber,
-                  body: `🔔 ${assigneesText} таска в статусе '${status.value}', а даты ее завершения нет. Необходимо добавить "Target".\n\n<details>\n\n![end-date-setting](https://github.com/personaClick/development/blob/master/static/issue-manager/end-date-setting.png?raw=true)\n\n</details>`,
+                  body: `🔔 ${assigneesText} таска в статусе '${status.value}', а даты ее завершения нет. Необходимо добавить "Target".\n\n<details>\n\n![end-date-setting](https://github.com/personaclick/development/blob/master/static/issue-manager/end-date-setting.png?raw=true)\n\n</details>`,
                 });
               }
             }

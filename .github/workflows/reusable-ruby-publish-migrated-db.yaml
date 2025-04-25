@@ -40,7 +40,7 @@ jobs:
       - name: Start postgres
         run: |
           docker exec postgres psql -U postgres -c "CREATE USER rails WITH SUPERUSER PASSWORD 'rails';"
-          docker exec postgres psql -U postgres -c "CREATE USER personaClick WITH SUPERUSER PASSWORD 'personaClick';"
+          docker exec postgres psql -U postgres -c "CREATE USER personaclick WITH SUPERUSER PASSWORD 'personaclick';"
           docker exec postgres rm -rf /docker-entrypoint-initdb.d/*
 
       - name: Checkout
@@ -104,9 +104,9 @@ jobs:
         run: |
           bundle exec rake clickhouse:create
           bundle exec rake clickhouse:schema:load
-          docker exec clickhouse_server clickhouse-client --query="rename database personaClick to personaClick_test"
+          docker exec clickhouse_server clickhouse-client --query="rename database personaclick to personaclick_test"
           docker exec clickhouse_server clickhouse-client --query="show databases"
-          docker exec clickhouse_server clickhouse-client --query="show tables from personaClick_test"
+          docker exec clickhouse_server clickhouse-client --query="show tables from personaclick_test"
 
       - name: Publish clickhouse server docker image
         env:
@@ -117,13 +117,13 @@ jobs:
           docker exec clickhouse_server sed -i 's|<path>/var/lib/clickhouse</path>|<path>/data</path>|g' /etc/clickhouse-server/config.xml
           docker stop clickhouse_server
           echo $GITHUB_TOKEN | docker login ghcr.io -u $REPOSITORY_OWNER --password-stdin
-          docker commit clickhouse_server ghcr.io/personaClick/clickhouse-server-migrated:latest
-          docker push ghcr.io/personaClick/clickhouse-server-migrated:latest
+          docker commit clickhouse_server ghcr.io/personaclick/clickhouse-server-migrated:latest
+          docker push ghcr.io/personaclick/clickhouse-server-migrated:latest
 
       - name: Run postgres migrations
         env:
-          PG_PASSWORD: personaClick
-          PG_USER: personaClick
+          PG_PASSWORD: personaclick
+          PG_USER: personaclick
           RAILS_ENV: test
         run: |
           bundle exec rake db:create
@@ -134,7 +134,7 @@ jobs:
           REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo $(docker exec postgres psql -U personaClick -W personaClick -d personaClick_test -c "\dt;")
+          echo $(docker exec postgres psql -U personaclick -W personaclick -d personaclick_test -c "\dt;")
           echo $GITHUB_TOKEN | docker login ghcr.io -u $REPOSITORY_OWNER --password-stdin
-          docker commit postgres ghcr.io/personaClick/postgres-migrated:latest
-          docker push ghcr.io/personaClick/postgres-migrated:latest
+          docker commit postgres ghcr.io/personaclick/postgres-migrated:latest
+          docker push ghcr.io/personaclick/postgres-migrated:latest
