@@ -32,14 +32,14 @@ runs:
         branchName: ${{ steps.createReleaseBranchStep.outputs.branchName }}
         githubToken: ${{ inputs.githubToken }}
         targetRepository: ${{ github.repository }}
-        filePattern: version.properties
+        filePattern: 'version.properties Info.plist'
 
     - uses: personaclick/workflow/.github/actions/github/pull-request/create@master
       with:
         targetDirectory: .
         githubToken: ${{ inputs.githubToken }}
         lastPrAuthor: ${{ steps.lastPrAuthorStep.outputs.lastPrAuthor }}
-        prTitle: "Bump version to ${{ inputs.releaseVersion }}"
-        prBody: "Automated version bump"
+        prTitle: 'Bump version to ${{ inputs.releaseVersion }}'
+        prBody: 'Automated version bump'
         branchName: ${{ steps.newBranchNameStep.outputs.branchName }}
         reviewerUsername: ${{ inputs.reviewerUsername }}
