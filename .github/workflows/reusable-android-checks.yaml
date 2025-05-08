@@ -52,7 +52,7 @@ on:
         required: true
       SONATA_PASSWORD:
         required: true
-      SONATYPE_PersonaClick:
+      SONATYPE:
         required: true
       SONATYPE_PERSONACLICK:
         required: true
@@ -89,7 +89,7 @@ jobs:
           SONATA_USERNAME: ${{ secrets.SONATA_USERNAME }}
           SONATA_PASSWORD: ${{ secrets.SONATA_PASSWORD }}
           SONATYPE_PERSONACLICK: ${{ secrets.SONATYPE_PERSONACLICK }}
-          SONATYPE_PersonaClick: ${{ secrets.SONATYPE_PersonaClick }}
+          SONATYPE: ${{ secrets.SONATYPE }}
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           SIGNING_KEY_FILE_AS_BASE64_STRING: ${{ secrets.SIGNING_KEY_FILE_AS_BASE64_STRING }}
