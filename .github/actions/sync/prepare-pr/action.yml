@@ -47,6 +47,10 @@ runs:
         githubToken: ${{ inputs.appToken }}
         targetRepository: ${{ inputs.targetRepository }}
 
+    - uses: personaclick/workflow/.github/actions/git/wait-available-branch@master
+      with:
+        branchToCheck: ${{ steps.newBranchNameStep.outputs.branchName }}
+
     - uses: personaclick/workflow/.github/actions/github/pull-request/create@master
       with:
         reviewerUsername: ${{ inputs.reviewerUsername }}
@@ -54,3 +58,5 @@ runs:
         githubToken: ${{ inputs.appToken }}
         lastPrAuthor: ${{ steps.lastPrAuthorStep.outputs.lastPrAuthor }}
         branchName: ${{ steps.newBranchNameStep.outputs.branchName }}
+        prTitle: 'Synchronization PR'
+        prBody: 'Automated repository synchronization'
