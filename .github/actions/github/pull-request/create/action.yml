@@ -19,11 +19,11 @@ inputs:
     required: false
   reviewerUsername:
     description: PullRequest reviewer username
-    default: TorinAsakura
+    default: noff
     required: true
   lastPrAuthor:
     description: PullRequest reviewer username
-    default: TorinAsakura
+    default: noff
     required: true
   commitMessage:
     default: 'feat: automated commit'

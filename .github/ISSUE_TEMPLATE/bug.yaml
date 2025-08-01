@@ -1,8 +1,6 @@
 name: Bug
 description: Что-то где-то сдохло
 labels: ['bug']
-assignees:
-  - TorinAsakura
 body:
   - type: textarea
     id: bug-description
