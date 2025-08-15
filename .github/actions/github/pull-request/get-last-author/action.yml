@@ -1,9 +1,9 @@
-name: Get last merget PullRequest author
-description: get last merget pull request author
+name: Get last merged PullRequest author
+description: get last merged pull request author
 
 inputs:
   githubToken:
-    description: GitHup token
+    description: GitHub token
     required: true
   reviewerUsername:
     description: github pull request reviewer username
@@ -11,14 +11,15 @@ inputs:
 
 outputs:
   lastPrAuthor:
-    description: Get branch name
+    description: last pull request author
     value: ${{ steps.pr_author.outputs.lastPrAuthor }}
 
 runs:
   using: composite
 
   steps:
-    - uses: actions/github-script@v7
+    - name: Get last merged PR author
+      uses: actions/github-script@v7
       id: pr_author
       with:
         github-token: ${{ inputs.githubToken }}
