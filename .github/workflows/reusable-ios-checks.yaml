@@ -19,21 +19,46 @@ on:
       cocoapodsToken:
         description: Cocoapods token
         required: true
+      env_vars:
+        required: false
 
 jobs:
   run:
     runs-on: macos-latest
+    env:
+      ACTIONS_IS_RUNNING: true
+      env_vars: ${{ secrets.env_vars }}
     steps:
+      - run: |
+          echo $env_vars
+          for i in $env_vars; do
+            i=$(echo $i | sed 's/=.*//g')=$(echo ${i#*=} | base64 -d | base64 -d)
+            echo ::add-mask::${i#*=}
+            printf '%s\n' "$i" >> $GITHUB_ENV
+          done
+          env
+
       - uses: actions/checkout@v4
 
       - uses: swift-actions/setup-swift@v2
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - uses: actions/cache@v4
+        with:
+          path: Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Pod install
         working-directory: ./DemoApp
         run: |
-          pod cache clean --all
-          rm -rf Pods
-          rm -rf Pods.xcodeproj
           pod install
 
       - name: Decode signing key file
@@ -50,38 +75,16 @@ jobs:
           cp ./DemoApp/PersonaClickDemo/Supporting\ Files/GoogleService-Info.plist ./DemoApp/PersonaClick.xcodeproj/xcshareddata/xcschemes/GoogleService-Info.plist
           cp ./DemoApp/PersonaClickDemo/Supporting\ Files/GoogleService-Info.plist ./DemoApp/PersonaClickDemo/GoogleService-Info.plist
 
-      - name: Use tree to show all files
-        run: |
-          print_tree() {
-            find "$1" | awk '
-            BEGIN {
-              FS="/"
-              OFS="/"
-            }
-            {
-              depth = split($0, path, "/") - 1
-              for (i = 1; i <= depth; i++) {
-                printf "|   "
-              }
-              printf "|-- %s\n", path[depth + 1]
-            }'
-          }
-
-          start_dir="${1:-.}"
-
-          echo "$start_dir"
-          print_tree "$start_dir"
-
       - name: Build
         run: |
-          xcodebuild clean build -workspace ./DemoApp/PersonaClick.xcworkspace -scheme PersonaClickDemo \
+          xcodebuild build -workspace ./DemoApp/PersonaClick.xcworkspace -scheme PersonaClickDemo \
           -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
           CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED='NO' CODE_SIGN_ENTITLEMENTS=''
 
       - name: Run tests
         if: ${{ !cancelled() }}
         run: |
-          xcodebuild clean test -workspace ./DemoApp/PersonaClick.xcworkspace -scheme PersonaClickDemo \
+          xcodebuild test -workspace ./DemoApp/PersonaClick.xcworkspace -scheme PersonaClickDemo \
           -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
           CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED='NO' CODE_SIGN_ENTITLEMENTS=''
 

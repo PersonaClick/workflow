@@ -42,11 +42,17 @@ runs:
         token: ${{ steps.appTokenStep.outputs.token }}
         repository: ${{inputs.replacementsRepo}}
 
+    - id: get_replacements
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq eval -o=json . ${{ inputs.replacementsPath }}
+
     - name: Read replacements from file
       shell: bash
       id: getReplacementsStep
       run: |
-        REPLACEMENTS=$(yq eval -o=json . ${{ inputs.replacementsPath }} | jq -c)
+        set -eo pipefail
+        REPLACEMENTS=$(jq -c '.' <<< '${{ steps.get_replacements.outputs.result }}')
         echo "Replacements: $REPLACEMENTS"
 
         echo "replacements=$REPLACEMENTS" >> $GITHUB_OUTPUT

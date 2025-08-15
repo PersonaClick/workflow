@@ -11,7 +11,7 @@ inputs:
     required: false
     default: ${{ github.repository }}
   githubToken:
-    description: GitHup token
+    description: GitHub token
     required: true
   branchName:
     description: Branch to commit
@@ -23,7 +23,7 @@ inputs:
   filePattern:
     description: File pattern used for `git add`. For example `src/*.js`
     required: false
-    default: '.'
+    default: 'version.properties'
 
 runs:
   using: composite
@@ -35,7 +35,7 @@ runs:
       run: rsync -a ${{ inputs.workingDirectory }} .
 
     - name: Commit changes
-      uses: planetscale/ghcommit-action@v0.2.0
+      uses: planetscale/ghcommit-action@v0.2.17
       env:
         GITHUB_TOKEN: ${{ inputs.githubToken }}
       with:

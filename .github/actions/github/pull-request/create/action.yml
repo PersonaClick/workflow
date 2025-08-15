@@ -4,10 +4,10 @@ description: create pull request on target repo
 inputs:
   targetDirectory:
     default: tmp/target
-    description: Commit author GitGup token
+    description: Commit author GitHub token
     required: true
   githubToken:
-    description: GitHup token
+    description: GitHub token
     required: true
   prTitle:
     description: PullRequest title
@@ -19,11 +19,11 @@ inputs:
     required: false
   reviewerUsername:
     description: PullRequest reviewer username
-    default: noff
+    default: nelfimov
     required: true
   lastPrAuthor:
     description: PullRequest reviewer username
-    default: noff
+    default: TorinAsakura
     required: true
   commitMessage:
     default: 'feat: automated commit'
@@ -33,13 +33,17 @@ inputs:
     description: git branch name
     required: true
   targetRepository:
-    description: pull reques target repository
+    description: pull request target repository
     required: false
 
 runs:
   using: composite
 
   steps:
+    -  shell: bash
+       run: |
+        sudo chmod -R ugo+rwX .
+
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
       id: cpr

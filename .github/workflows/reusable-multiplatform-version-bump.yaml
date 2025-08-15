@@ -13,7 +13,7 @@ on:
         required: false
         type: string
         description: Pull request reviewer
-        default: noff
+        default: nelfimov
 
     secrets:
       appSecret:
@@ -34,32 +34,18 @@ jobs:
           app-id: ${{ inputs.appId }}
           private-key: ${{ secrets.appSecret }}
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          owner: ${{ github.repository_owner }}
           token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
 
-      - uses: codfish/semantic-release-action@v3
+      - uses: docker://ghcr.io/codfish/semantic-release-action:v3
         id: semanticReleaseStep
         env:
           GH_TOKEN: ${{ secrets.githubToken || steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
         with:
           additional-packages: |
-            ['@semantic-release/git', '@semantic-release/exec']
-
-      - name: Debug git diff
-        run: |
-          git diff
-
-      - name: Check release published
-        shell: bash
-        run: |
-          if [ "${NEW_RELEASE_PUBLISHED}" != "true" ]; then
-            echo "New release not published, exit"
-            exit 1
-          fi
+            ['@semantic-release/exec', '@semantic-release/git']
 
       - uses: personaclick/workflow/.github/actions/release/prepare-pr@master
         with:
