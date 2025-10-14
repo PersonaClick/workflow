@@ -141,6 +141,14 @@ jobs:
           bundle exec rake db:create
           bundle exec rake db:schema:load
 
+      - name: Run seeds
+        env:
+          PG_PASSWORD: personaclick
+          PG_USER: personaclick
+          RAILS_ENV: development
+        run: |
+          bundle exec rake db:seed
+
       - name: Publish postgres docker image
         env:
           REPOSITORY_OWNER: ${{ github.repository_owner }}
