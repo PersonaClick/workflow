@@ -54,8 +54,8 @@ jobs:
 
       - name: Start postgres
         env:
-          PGPASSWORD: test
-          PGUSER: postgres
+          PGUSER: personaclick
+          PGPASSWORD: personaclick
           PGHOST: localhost
         run: |
           psql -c "CREATE DATABASE personaclick_clickhouse_rails_test WITH OWNER postgres;"
@@ -124,8 +124,8 @@ jobs:
         env:
           DISABLE_DATABASE_ENVIRONMENT_CHECK: 1
           RAILS_ENV: test
-          PG_USER: postgres
-          PG_PASSWORD: test
+          PG_USER: personaclick
+          PG_PASSWORD: personaclick
         run: bundle exec rake clickhouse:schema:load || bundle exec rake clickhouse:schema:load -- --simple
 
       - name: Test
@@ -133,8 +133,8 @@ jobs:
         env:
           DISABLE_DATABASE_ENVIRONMENT_CHECK: 1
           RAILS_ENV: test
-          PG_USER: postgres
-          PG_PASSWORD: test
+          PG_USER: personaclick
+          PG_PASSWORD: personaclick
         run: bin/rspec
 
       - name: Bundle
