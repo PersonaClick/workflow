@@ -41,10 +41,7 @@ jobs:
           - 5672:5672
 
       postgres:
-        image: postgres:alpine
-        env:
-          POSTGRES_PASSWORD: test
-          POSTGRES_USER: postgres
+        image: ghcr.io/personaclick/postgres-migrated:latest
         ports:
           - 5432:5432
 
@@ -126,17 +123,6 @@ jobs:
           if test -f "config/secrets.yml.example"; then
             mv ./config/secrets.yml.example ./config/secrets.yml
           fi
-
-      - name: Prepare DB
-        env:
-          DISABLE_DATABASE_ENVIRONMENT_CHECK: 1
-          RAILS_ENV: test
-          PG_USER: postgres
-          PG_PASSWORD: test
-        run: |
-          bundle exec rake db:functions:install || true
-          bin/rails db:environment:set
-          bundle exec rake db:reset
 
       - name: Load clickhouse schema
         if: ${{ !cancelled() }}
