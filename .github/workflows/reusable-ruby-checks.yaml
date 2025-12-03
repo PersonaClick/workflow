@@ -46,27 +46,10 @@ jobs:
           - 5432:5432
 
     steps:
-      - name: PSQL client
-        run: sudo apt-get install --yes --no-install-recommends postgresql-client
-
       - id: changed_files
         uses: tj-actions/changed-files@v47.0.0
 
-      - name: Start postgres
-        env:
-          PGPASSWORD: test
-          PGUSER: postgres
-          PGHOST: localhost
-        run: |
-          psql -c "CREATE DATABASE personaclick_test WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaclick_production WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaclick_clickhouse_rails_test WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaclick_rails_test WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaclick_clickhouse WITH OWNER postgres;"
-          psql -c "CREATE DATABASE personaclick_clickhouse_test WITH OWNER postgres;"
-          psql -d postgres -c "SELECT version();"
-
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Needs ImageMagick
         run: |
