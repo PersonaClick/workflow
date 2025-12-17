@@ -112,9 +112,9 @@ jobs:
 
       - name: Run postgres migrations test
         env:
-          PG_PASSWORD: personaclick
-          PG_USER: personaclick
           RAILS_ENV: test
+          DATABASE_TEST_URL: postgres://personaclick:personaclick@localhost:5432/personaclick_test
+          DATABASE_CLICK_TEST_URL: postgres://personaclick:personaclick@localhost:5432/personaclick_clickhouse_test
         run: |
           bundle exec rake db:create
           bundle exec rake db:functions:install || true
