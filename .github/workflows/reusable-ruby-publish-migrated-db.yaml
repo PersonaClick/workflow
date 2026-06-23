@@ -189,7 +189,7 @@ jobs:
 
       - name: Run dashboard seeds
         run: |
-          docker run --rm --network personaclick ghcr.io/personaclick/dashboard:latest rake db:seed
+          docker run --rm --network personaclick -e RAILS_ENV=production ghcr.io/personaclick/dashboard:latest rake environment db:seed
 
       - name: Publish postgres docker image
         run: |
