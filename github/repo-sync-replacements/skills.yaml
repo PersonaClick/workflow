@@ -1,0 +1,27 @@
+# Replacement rules for syncing personaclick/skills -> personaclick/skills.
+# Consumed by personaclick/workflow/.github/actions/sync/read-replacements (replacementsRepo: personaclick/workflow)
+# and applied by @scripts/repo-replacement (renames paths + file contents, then deletions).
+#
+# Order matters: the api-domain rule must run BEFORE the generic "personaclick" rule,
+# otherwise "api.personaclick.com" would become "api.personaclick.ru" (wrong TLD).
+replacements:
+  - from: personaclick.com
+    to: personaclick.com
+  - from: PersonaClick
+    to: PERSONACLICK
+  - from: PersonaClick
+    to: Personaclick
+  - from: personaclick
+    to: personaclick
+  - from: r46
+    to: personaclick
+  - from: 'Russian version: [README.ru.md](README.ru.md).'
+    to: ''
+
+deletions:
+  - .github
+  - .gitmodules
+  - docs
+  - README.ru.md
+
+ignore:
