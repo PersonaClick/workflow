@@ -259,6 +259,18 @@ jobs:
           docker exec clickhouse clickhouse-client --query="show tables from personaclick_test"
           docker exec clickhouse clickhouse-client --query="show tables from personaclick"
 
+          docker exec clickhouse clickhouse-client --multiquery --query="
+            CREATE USER IF NOT EXISTS personaclick
+              IDENTIFIED WITH plaintext_password BY 'personaclick';
+            GRANT ALL ON personaclick.* TO personaclick;
+            GRANT ALL ON personaclick_test.* TO personaclick;
+          "
+
+          docker exec clickhouse clickhouse-client \
+            --user personaclick \
+            --password personaclick \
+            --query="SELECT 1"
+
       - name: Publish clickhouse docker image
         env:
           CLICKHOUSE_IMAGE: ${{ inputs.clickhouseImage }}
